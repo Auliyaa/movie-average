@@ -7,7 +7,7 @@ struct my_handler: public frame_handler
 {
   void handle(AVFrame* frame)
   {
-    std::cout << "Frame #" << frame->pkt_pos << std::endl;
+    std::cout << "Frame #" << frame->display_picture_number << std::endl;
   }
 };
 

@@ -184,7 +184,10 @@ std::vector<AVFrame*> movie_decoder::next_frame()
     {
       result.push_back(frame);
     }
-    break;
+    if (!result.empty())
+    {
+      break;
+    }
   }
 
   return result;
