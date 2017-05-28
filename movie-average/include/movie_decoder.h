@@ -57,10 +57,11 @@ public:
   bool is_open() const;
   void close();
 
-  void decode_file(size_t thread_count=std::thread::hardware_concurrency());
+//  void decode_file(size_t thread_count=std::thread::hardware_concurrency());
+  void decode_file(size_t thread_count=1);
 
   void set_handler(frame_handler* handler);
 
 private:
-  std::vector<rgb_frame> next_frame();
+  std::vector<AVFrame *> next_frame();
 };

@@ -126,16 +126,32 @@ void movie_decoder::decode_file(size_t thread_count)
       {
         while(true)
         {
-          std::vector<rgb_frame> frames = next_frame();
+          std::vector<AVFrame*> frames = next_frame();
 
           if (frames.empty())
           {
             break;
           }
 
-          for (rgb_frame& frame : frames)
+          for (AVFrame* frame : frames)
           {
-            _frame_handler->handle(frame);
+            // Convert to RGB
+            uint8_t* rgb_data = reinterpret_cast<uint8_t*>(malloc(frame->width * frame->height * 3));
+            uint8_t* rgb_dst[1] = { rgb_data };
+            int rgb_linesize[1] = { 3 * frame->width};
+            sws_scale(_sws_context, frame->data, frame->linesize, 0, frame->height,
+                      rgb_dst, rgb_linesize);
+
+            rgb_frame rgb_frame;
+            rgb_frame.data           = rgb_data;
+            rgb_frame.width          = frame->width;
+            rgb_frame.height         = frame->height;
+            rgb_frame.display_number = _current_frame++;
+
+            _frame_handler->handle(rgb_frame);
+
+            av_frame_free(&frame);
+            free(rgb_frame.data);
           }
 
           std::this_thread::yield();
@@ -155,11 +171,12 @@ void movie_decoder::set_handler(frame_handler* handler)
   _frame_handler = handler;
 }
 
-std::vector<rgb_frame> movie_decoder::next_frame()
+std::vector<AVFrame*> movie_decoder::next_frame()
 {
   std::lock_guard<spin_lock> __guard__(_lock);
+  std::cout << "bleh1" << std::endl;
 
-  std::vector<rgb_frame> result;
+  std::vector<AVFrame*> result;
 
   AVPacket packet;
   av_init_packet(&packet);
@@ -177,6 +194,7 @@ std::vector<rgb_frame> movie_decoder::next_frame()
 
     if (avcodec_send_packet(_codec_context, &packet) != 0)
     {
+      std::cout << "bleh2" << std::endl;
       THROW_ERROR("Failed to send packet");
     }
 
@@ -184,32 +202,23 @@ std::vector<rgb_frame> movie_decoder::next_frame()
 
     while(avcodec_receive_frame(_codec_context, frame) == 0)
     {
-      // Convert to RGB
-      uint8_t* rgb_data = reinterpret_cast<uint8_t*>(malloc(frame->width * frame->height * 3));
-      uint8_t* rgb_dst[1] = { rgb_data };
-      int rgb_linesize[1] = { 3 * frame->width};
-      sws_scale(_sws_context, frame->data, frame->linesize, 0, frame->height,
-                rgb_dst, rgb_linesize);
-
-      rgb_frame f;
-      f.data           = rgb_data;
-      f.width          = frame->width;
-      f.height         = frame->height;
-      f.display_number = _current_frame++;
-
-      result.push_back(f);
+      result.push_back(frame);
+      frame = av_frame_alloc();
     }
+
     if (!result.empty())
     {
       break;
     }
   }
 
+  av_frame_free(&frame);
+
   if (ret != 0)
   {
     _eof = true;
   }
 
-  av_frame_free(&frame);
+  std::cout << "bleh2" << std::endl;
   return result;
 }
