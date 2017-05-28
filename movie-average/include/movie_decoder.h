@@ -57,8 +57,7 @@ public:
   bool is_open() const;
   void close();
 
-//  void decode_file(size_t thread_count=std::thread::hardware_concurrency());
-  void decode_file(size_t thread_count=1);
+  void decode_file(size_t thread_count=std::thread::hardware_concurrency());
 
   void set_handler(frame_handler* handler);
 
