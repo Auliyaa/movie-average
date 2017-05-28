@@ -174,7 +174,6 @@ void movie_decoder::set_handler(frame_handler* handler)
 std::vector<AVFrame*> movie_decoder::next_frame()
 {
   std::lock_guard<spin_lock> __guard__(_lock);
-  std::cout << "bleh1" << std::endl;
 
   std::vector<AVFrame*> result;
 
@@ -194,7 +193,6 @@ std::vector<AVFrame*> movie_decoder::next_frame()
 
     if (avcodec_send_packet(_codec_context, &packet) != 0)
     {
-      std::cout << "bleh2" << std::endl;
       THROW_ERROR("Failed to send packet");
     }
 
@@ -219,6 +217,5 @@ std::vector<AVFrame*> movie_decoder::next_frame()
     _eof = true;
   }
 
-  std::cout << "bleh2" << std::endl;
   return result;
 }

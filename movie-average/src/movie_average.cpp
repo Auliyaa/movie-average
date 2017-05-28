@@ -12,7 +12,6 @@ struct my_handler: public frame_handler
 
   void handle(rgb_frame frame)
   {
-    std::cout << "frame #" << frame.display_number << std::endl;
 
   }
 };
