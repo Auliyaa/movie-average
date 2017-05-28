@@ -5,9 +5,15 @@
 
 struct my_handler: public frame_handler
 {
-  void handle(AVFrame* frame)
+  void init(AVFormatContext *format, AVCodecContext *codec)
   {
-//    std::cout << "Frame #" << frame->display_picture_number << std::endl;
+
+  }
+
+  void handle(rgb_frame frame)
+  {
+    std::cout << "frame #" << frame.display_number << std::endl;
+
   }
 };
 

@@ -12,14 +12,27 @@ extern "C"
 #include <libavutil/imgutils.h>
 }
 
+struct rgb_frame
+{
+  int height;
+  int width;
+  size_t display_number;
+
+  uint8_t* data;
+};
+
 struct frame_handler
 {
   virtual ~frame_handler();
-  virtual void handle(AVFrame* frame)=0;
+
+  virtual void init(AVFormatContext* format, AVCodecContext* codec)=0;
+  virtual void handle(rgb_frame frame)=0;
 };
 
 class movie_decoder
 {
+  size_t             _current_frame;
+
   std::atomic_bool   _eof;
   spin_lock          _lock;
 
@@ -49,5 +62,5 @@ public:
   void set_handler(frame_handler* handler);
 
 private:
-  std::vector<AVFrame*> next_frame();
+  std::vector<rgb_frame> next_frame();
 };

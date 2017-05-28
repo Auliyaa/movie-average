@@ -13,7 +13,8 @@ frame_handler::~frame_handler()
 }
 
 movie_decoder::movie_decoder()
-  : _eof(false),
+  : _current_frame(0),
+    _eof(false),
     _frame_handler(nullptr),
     _format_context(NULL),
     _stream(NULL),
@@ -125,14 +126,14 @@ void movie_decoder::decode_file(size_t thread_count)
       {
         while(true)
         {
-          std::vector<AVFrame*> frames = next_frame();
+          std::vector<rgb_frame> frames = next_frame();
 
           if (frames.empty())
           {
             break;
           }
 
-          for (AVFrame* frame : frames)
+          for (rgb_frame& frame : frames)
           {
             _frame_handler->handle(frame);
           }
@@ -154,16 +155,18 @@ void movie_decoder::set_handler(frame_handler* handler)
   _frame_handler = handler;
 }
 
-std::vector<AVFrame*> movie_decoder::next_frame()
+std::vector<rgb_frame> movie_decoder::next_frame()
 {
   std::lock_guard<spin_lock> __guard__(_lock);
 
-  std::vector<AVFrame*> result;
+  std::vector<rgb_frame> result;
 
   AVPacket packet;
   av_init_packet(&packet);
 
+  AVFrame* frame = av_frame_alloc();
   int ret = 0;
+
   while ((ret = av_read_frame(_format_context, &packet)) == 0)
   {
     if (packet.stream_index != _stream->index)
@@ -179,10 +182,22 @@ std::vector<AVFrame*> movie_decoder::next_frame()
 
     av_packet_unref(&packet);
 
-    AVFrame* frame = av_frame_alloc();
     while(avcodec_receive_frame(_codec_context, frame) == 0)
     {
-      result.push_back(frame);
+      // Convert to RGB
+      uint8_t* rgb_data = reinterpret_cast<uint8_t*>(malloc(frame->width * frame->height * 3));
+      uint8_t* rgb_dst[1] = { rgb_data };
+      int rgb_linesize[1] = { 3 * frame->width};
+      sws_scale(_sws_context, frame->data, frame->linesize, 0, frame->height,
+                rgb_dst, rgb_linesize);
+
+      rgb_frame f;
+      f.data           = rgb_data;
+      f.width          = frame->width;
+      f.height         = frame->height;
+      f.display_number = _current_frame++;
+
+      result.push_back(f);
     }
     if (!result.empty())
     {
@@ -195,5 +210,6 @@ std::vector<AVFrame*> movie_decoder::next_frame()
     _eof = true;
   }
 
+  av_frame_free(&frame);
   return result;
 }
