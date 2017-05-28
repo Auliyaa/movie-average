@@ -20,6 +20,7 @@ struct frame_handler
 
 class movie_decoder
 {
+  std::atomic_bool   _eof;
   spin_lock          _lock;
 
   frame_handler*     _frame_handler;

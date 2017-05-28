@@ -13,7 +13,8 @@ frame_handler::~frame_handler()
 }
 
 movie_decoder::movie_decoder()
-  : _frame_handler(nullptr),
+  : _eof(false),
+    _frame_handler(nullptr),
     _format_context(NULL),
     _stream(NULL),
     _codec_context(NULL),
@@ -144,10 +145,8 @@ void movie_decoder::decode_file(size_t thread_count)
       }
     });
   }
-  for(int ii=0; ii < _pool.size(); ++ii)
-  {
-    _pool.get_thread(ii).join();
-  }
+
+  _pool.stop(true);
 }
 
 void movie_decoder::set_handler(frame_handler* handler)
@@ -164,7 +163,8 @@ std::vector<AVFrame*> movie_decoder::next_frame()
   AVPacket packet;
   av_init_packet(&packet);
 
-  while (av_read_frame(_format_context, &packet) == 0)
+  int ret = 0;
+  while ((ret = av_read_frame(_format_context, &packet)) == 0)
   {
     if (packet.stream_index != _stream->index)
     {
@@ -188,6 +188,11 @@ std::vector<AVFrame*> movie_decoder::next_frame()
     {
       break;
     }
+  }
+
+  if (ret != 0)
+  {
+    _eof = true;
   }
 
   return result;
