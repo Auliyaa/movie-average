@@ -53,6 +53,7 @@ find_package(Qt5Gui REQUIRED)
 # Global compiler directives
 # ==================================================
 include_directories(${CMAKE_SOURCE_DIR}/libs/ctpl)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
 
 # ==================================================
 # Targets built by this project

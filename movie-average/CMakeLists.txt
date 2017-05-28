@@ -13,6 +13,7 @@ include_directories(
 add_executable(${MOVIE_AVERAGE}
   src/movie_average.cpp
   src/movie_decoder.cpp
+  src/frame_handlers.cpp
 )
 
 target_link_libraries(${MOVIE_AVERAGE}

@@ -2,19 +2,7 @@
 #include <tclap/CmdLine.h>
 
 #include <movie_decoder.h>
-
-struct my_handler: public frame_handler
-{
-  void init(AVFormatContext *format, AVCodecContext *codec)
-  {
-
-  }
-
-  void handle(rgb_frame frame)
-  {
-
-  }
-};
+#include <frame_handlers.h>
 
 int main(int argc, char **argv)
 {
@@ -42,8 +30,11 @@ int main(int argc, char **argv)
 
   movie_decoder decoder;
   decoder.open(input);
-  decoder.set_handler(new my_handler);
+
+  avg_line_handler* hdlr = new avg_line_handler();
+  decoder.set_handler(hdlr);
   decoder.decode_file();
+  hdlr->save(output);
 
   return 0;
 }

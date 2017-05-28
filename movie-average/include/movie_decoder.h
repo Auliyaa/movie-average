@@ -25,7 +25,7 @@ struct frame_handler
 {
   virtual ~frame_handler();
 
-  virtual void init(AVFormatContext* format, AVCodecContext* codec)=0;
+  virtual void init(AVFormatContext *format, AVCodecContext *codec, AVStream *stream)=0;
   virtual void handle(rgb_frame frame)=0;
 };
 

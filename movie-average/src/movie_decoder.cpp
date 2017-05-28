@@ -117,6 +117,7 @@ void movie_decoder::close()
 void movie_decoder::decode_file(size_t thread_count)
 {
   _pool.resize(thread_count);
+  _frame_handler->init(_format_context, _codec_context, _stream);
 
   for(size_t ii=0; ii < thread_count; ++ii)
   {
