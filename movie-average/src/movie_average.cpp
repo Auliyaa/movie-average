@@ -28,6 +28,9 @@ int main(int argc, char **argv)
     return 1;
   }
 
+  std::cout << "Startng decoding of  : " << input << std::endl;
+  std::cout << "> Saving results into: " << output << std::endl;
+
   movie_decoder decoder;
   decoder.open(input);
 

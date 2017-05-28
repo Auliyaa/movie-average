@@ -1,9 +1,31 @@
 #include <frame_handlers.h>
+
 #include <iostream>
+#include <sstream>
+
+#include <chrono>
 
 #include <QtGui/QImage>
 
 #define DVAL(V) std::cout << #V << " = " << V << std::endl
+
+std::string time_str(double time)
+{
+  std::string units = "secs";
+  if (time >= 60)
+  {
+    time /= 60.;
+    units = "mins";
+  }
+  if (time >= 60)
+  {
+    time /= 60.;
+    units = "hours";
+  }
+  std::stringstream res;
+  res << time << units;
+  return res.str();
+}
 
 void avg_line_handler::init(AVFormatContext *format, AVCodecContext *codec, AVStream* stream)
 {
@@ -18,6 +40,8 @@ void avg_line_handler::init(AVFormatContext *format, AVCodecContext *codec, AVSt
   frame_height = codec->height;
 
   data = reinterpret_cast<uint8_t*>(malloc(frame_count * frame_height * 3));
+
+  start_time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 }
 
 void avg_line_handler::handle(rgb_frame frame)
@@ -29,8 +53,18 @@ void avg_line_handler::handle(rgb_frame frame)
 
   if (frame.display_number%(frame_count/200) == 0)
   {
-    std::cout << ">>> Frame #" << frame.display_number << " / " << frame_count
-              << " (" << frame.display_number*100./frame_count << "%)" << std::endl;
+    double now       = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    double took      = (now - start_time) / 1000.;
+    double percent   = (double)frame.display_number * 100. / (double)frame_count;
+    double fps       = (double)frame.display_number / (double)took;
+    double remaining = ((double)took * ((double)frame_count - (double)frame.display_number)) / ((double)frame.display_number);
+
+    std::cout << "Frame " << frame.display_number << " / " << frame_count << " (" << percent << "%)" << std::endl
+
+              << " Elapsed  : " << time_str(took)                                         << std::endl
+              << " FPS      : " << fps                                                    << std::endl
+              << " Remaining: " << time_str(remaining)                                    << std::endl
+              << std::endl;
   }
 
   for (size_t y=0; y < frame_height; ++y)
