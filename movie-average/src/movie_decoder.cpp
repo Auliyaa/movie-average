@@ -174,7 +174,7 @@ void movie_decoder::set_handler(frame_handler* handler)
 
 std::vector<AVFrame*> movie_decoder::next_frame()
 {
-  std::lock_guard<spin_lock> __guard__(_lock);
+  std::lock_guard<std::mutex> __guard__(_lock);
 
   std::vector<AVFrame*> result;
 

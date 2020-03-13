@@ -2,7 +2,6 @@
 
 #include <functional>
 #include <ctpl_stl.h>
-#include <spin_lock.h>
 
 extern "C"
 {
@@ -34,7 +33,7 @@ class movie_decoder
   size_t             _current_frame;
 
   std::atomic_bool   _eof;
-  spin_lock          _lock;
+  std::mutex         _lock;
 
   frame_handler*     _frame_handler;
 
