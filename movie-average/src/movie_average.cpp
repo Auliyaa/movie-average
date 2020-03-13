@@ -14,7 +14,7 @@ int main(int argc, char **argv)
 
   try
   {
-    TCLAP::CmdLine               cmd("Averages a movie colors in a single picture", ' ', AIO_PROJECT_VERSION);
+    TCLAP::CmdLine               cmd("Averages a movie colors in a single picture", ' ', "1.0.0");
     TCLAP::ValueArg<std::string> input_arg("i", "input", "Input file", true, "", "string");
     TCLAP::ValueArg<std::string> output_arg("o", "output", "Output file", true, "", "string");
     cmd.add(input_arg);

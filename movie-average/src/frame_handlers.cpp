@@ -3,9 +3,8 @@
 #include <iostream>
 #include <sstream>
 
-#include <chrono>
-
 #include <QtGui/QImage>
+#include <chrono>
 
 #define DVAL(V) std::cout << #V << " = " << V << std::endl
 

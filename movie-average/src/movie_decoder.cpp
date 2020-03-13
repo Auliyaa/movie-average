@@ -83,9 +83,9 @@ void movie_decoder::open(const std::string& filename)
   }
 
   // Setup the codec context
-  if(_codec->capabilities & CODEC_CAP_TRUNCATED)
+  if(_codec->capabilities & AV_CODEC_CAP_TRUNCATED)
   {
-    _codec_context->flags |= CODEC_FLAG_TRUNCATED;
+    _codec_context->flags |= AV_CODEC_FLAG_TRUNCATED;
   }
   avcodec_parameters_to_context(_codec_context, _codec_params);
 
